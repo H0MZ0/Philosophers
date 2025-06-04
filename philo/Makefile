@@ -1,7 +1,7 @@
 CC      = cc
 CFLAGS  = -Wall -Wextra -Werror
 
-SRCS    = cleanup.c main.c monitor.c time.c init.c routine.c utils.c
+SRCS    = main.c tools.c
 OBJS    = $(SRCS:.c=.o)
 
 HEADERS = philo.h
