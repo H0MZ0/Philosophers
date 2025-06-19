@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:23:59 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/19 11:34:36 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/19 13:57:14 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <pthread.h>
+# include <sys/time.h>
 
 typedef struct s_args
 {
@@ -38,6 +39,7 @@ typedef struct s_philo
 	int				meals_eaten;
 	long			last_meal_time;
 	t_data			*data;
+	unsigned long   thread_id;
 }	t_philo;
 
 typedef struct s_data
@@ -46,8 +48,13 @@ typedef struct s_data
 	t_philo			*philos;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	print_mutex;
+	long long		start_time;
+	int				stop;
+	pthread_mutex_t stop_mutex;
 }	t_data;
 
+long long	current_time(void);
+void	print_action(t_philo *philo, char *msg);
 int		ft_atoi(const char *str);
 void	put_error(char *message);
 void	init_data(t_data *data);
