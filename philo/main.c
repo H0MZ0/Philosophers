@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/19 14:02:51 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/19 15:11:42 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,9 +127,10 @@ void *monitor_routine(void *arg)
 {
 	t_data *data = (t_data *)arg;
 	int i, done;
+	i = 0;
 	while (!data->stop)
 	{
-		for (i = 0; i < data->args.num_philos; i++)
+		while (i < data->args.num_philos)
 		{
 			if (current_time() - data->philos[i].last_meal_time > data->args.time_to_die)
 			{
@@ -137,6 +138,7 @@ void *monitor_routine(void *arg)
 				data->stop = 1;
 				break;
 			}
+			i++;
 		}
 		if (data->args.num_meals > 0)
 		{
@@ -154,21 +156,25 @@ void *monitor_routine(void *arg)
 
 int	main(int ac, char **av)
 {
-	int		i;
-	t_data	data;
+    int			i;
+    t_data		data;
+    pthread_t	monitor_thread;
 
-	init_args(ac, av, &data.args);
-	init_data(&data);
-	data.start_time = current_time();
-	i = 0;
-	while (i < data.args.num_philos)
-	{
-		if (pthread_create((pthread_t *)&data.philos[i].thread_id, NULL, philo_routine, &data.philos[i]) != 0)
-			put_error("Failed to create thread");
-		i++;
-	}
-	i = 0;
-	while (i < data.args.num_philos)
-		pthread_join(*(pthread_t *)&data.philos[i++].thread_id, NULL);
-	return (0);
+    init_args(ac, av, &data.args);
+    init_data(&data);
+    data.start_time = current_time();
+    i = 0;
+    while (i < data.args.num_philos)
+    {
+        if (pthread_create((pthread_t *)&data.philos[i].thread_id, NULL, philo_routine, &data.philos[i]) != 0)
+            put_error("Failed to create thread");
+        i++;
+    }
+    if (pthread_create(&monitor_thread, NULL, monitor_routine, &data) != 0)
+        put_error("Failed to create monitor thread");
+    i = 0;
+    while (i < data.args.num_philos)
+        pthread_join(*(pthread_t *)&data.philos[i++].thread_id, NULL);
+    pthread_join(monitor_thread, NULL);
+    return (0);
 }
