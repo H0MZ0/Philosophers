@@ -6,25 +6,64 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/18 02:58:26 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/19 11:30:50 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
+void	init_data(t_data *data)
+{
+	int (i), (n);
+	n = data->args.num_philos;
+	data->philos = malloc(sizeof(t_philo) * n);
+	if (!data->philos)
+		put_error("Malloc failed (philos)");
+	data->forks = malloc(sizeof(pthread_mutex_t) * n);
+	if (!data->forks)
+		put_error("Malloc failed (forks)");
+	i = -1;
+	while (++i < n)
+		if (pthread_mutex_init(&data->forks[i], NULL) == -1)
+			put_error("pthread_mutex_init failed");
+	pthread_mutex_init(&data->print_mutex, NULL);
+	i = -1;
+	while (++i < n)
+	{
+		data->philos[i].id = i + 1;
+		data->philos[i].left_fork = i;
+		data->philos[i].right_fork = (i + 1) % n;
+		data->philos[i].meals_eaten = 0;
+		data->philos[i].last_meal_time = 0;
+		data->philos[i].data = data;
+	}
+}
+
+void	init_args(int ac, char **av, t_args *args)
+{
+	if (ac < 5 || ac > 6)
+		put_error("Invalid number of arguments");
+	args->num_philos = ft_atoi(av[1]);
+	args->time_to_die = ft_atoi(av[2]);
+	args->time_to_eat = ft_atoi(av[3]);
+	args->time_to_sleep = ft_atoi(av[4]);
+	if (args->num_philos < 1 || args->time_to_die < 1
+		|| args->time_to_eat < 1 || args->time_to_sleep < 1)
+		put_error("Invalid argument values");
+	args->num_meals = -1;
+	if (ac == 6)
+	{
+		args->num_meals = ft_atoi(av[5]);
+		if (args->num_meals < 0)
+			put_error("Invalid number of meals");
+	}
+}
+
 int	main(int ac, char **av)
 {
-	t_philo *philo;
-	int i;
+	t_data	data;
 
-	init_args(ac, av, &philo);
-	pthread_mutex_t	*forks = malloc(sizeof(pthread_mutex_t) * philo->args->num_philos);
-	i = 0;
-	while (i < philo->args->num_philos)
-	{
-		pthread_mutex_init(&forks[i], NULL);
-		i++;
-	}
-	init_philos(philo, forks);
+	init_args(ac, av, &data.args);
+	init_data(&data);
 	return (0);
 }

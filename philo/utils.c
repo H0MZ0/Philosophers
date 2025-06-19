@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:26:36 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/18 02:49:29 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/19 11:34:03 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 int	ft_atoi(const char *str)
 {
 	long	result;
-	
+
 	int (i), (sign);
 	sign = 1;
 	result = 0;
@@ -54,5 +54,5 @@ void	put_error(char *message)
 	write(2, "Error: ", 7);
 	write(2, message, ft_strlen(message));
 	write(2, "\n", 1);
-	exit(true);
+	exit(1);
 }
