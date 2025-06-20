@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/20 12:19:58 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/20 12:26:27 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,19 +101,21 @@ void init_args(int ac, char **av, t_args *args)
 	}
 }
 
+void	one_philo(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+	print_action(philo, "has taken a fork");
+	sleep_ms(philo->data->args.time_to_die);
+	print_action(philo, "died");
+	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+}
+
 void *philo_routine(void *arg)
 {
 	t_philo *philo = (t_philo *)arg;
 
 	if (philo->data->args.num_philos == 1)
-	{
-		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
-		print_action(philo, "has taken a fork");
-		sleep_ms(philo->data->args.time_to_die);
-		print_action(philo, "died");
-		pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
-		return NULL;
-	}
+		return (one_philo(philo), NULL);
 	while (1)
 	{
 		pthread_mutex_lock(&philo->data->stop_mutex);
@@ -121,7 +123,6 @@ void *philo_routine(void *arg)
 		pthread_mutex_unlock(&philo->data->stop_mutex);
 		if (stop)
 			break;
-
 		pthread_mutex_lock(&philo->meal_mutex);
 		if (philo->data->args.num_meals > 0 &&
 			philo->meals_eaten >= philo->data->args.num_meals)
@@ -130,16 +131,13 @@ void *philo_routine(void *arg)
 			break;
 		}
 		pthread_mutex_unlock(&philo->meal_mutex);
-
 		print_action(philo, "is thinking");
 		take_forks(philo);
 		print_action(philo, "is eating");
-
 		pthread_mutex_lock(&philo->meal_mutex);
 		philo->last_meal_time = current_time();
 		philo->meals_eaten++;
 		pthread_mutex_unlock(&philo->meal_mutex);
-
 		sleep_ms(philo->data->args.time_to_eat);
 		put_down_forks(philo);
 		print_action(philo, "is sleeping");
@@ -165,13 +163,11 @@ void *monitor_routine(void *arg)
 			long long time_since_meal = current_time() - data->philos[i].last_meal_time;
 			int meals = data->philos[i].meals_eaten;
 			pthread_mutex_unlock(&data->philos[i].meal_mutex);
-
 			pthread_mutex_lock(&data->stop_mutex);
 			int stop = data->stop;
 			pthread_mutex_unlock(&data->stop_mutex);
 			if (stop)
-				return NULL;
-
+				return (NULL);
 			if (time_since_meal > data->args.time_to_die)
 			{
 				pthread_mutex_lock(&data->stop_mutex);
@@ -181,7 +177,7 @@ void *monitor_routine(void *arg)
 					print_action(&data->philos[i], "died");
 				}
 				pthread_mutex_unlock(&data->stop_mutex);
-				return NULL;
+				return (NULL);
 			}
 			if (data->args.num_meals > 0 && meals < data->args.num_meals)
 				done = 0;
@@ -192,10 +188,10 @@ void *monitor_routine(void *arg)
 			pthread_mutex_lock(&data->stop_mutex);
 			data->stop = 1;
 			pthread_mutex_unlock(&data->stop_mutex);
-			return NULL;
+			return (NULL);
 		}
 	}
-	return NULL;
+	return (NULL);
 }
 
 void cleanup(t_data *data)
