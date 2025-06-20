@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/20 12:26:27 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/20 12:50:45 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,27 @@
 
 void sleep_ms(int ms)
 {
-	long long start = current_time();
+	int start = current_time();
 	while (current_time() - start < ms)
 		usleep(100);
 }
 
 void take_forks(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
-	print_action(philo, "has taken a fork");
-	pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
-	print_action(philo, "has taken a fork");
+	if (philo->id % 2 == 0)
+	{
+		pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
+		print_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+		print_action(philo, "has taken a fork");
+	}
+	else
+	{
+		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+		print_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
+		print_action(philo, "has taken a fork");
+	}
 }
 
 void put_down_forks(t_philo *philo)
@@ -36,7 +46,7 @@ void put_down_forks(t_philo *philo)
 void print_action(t_philo *philo, char *msg)
 {
 	pthread_mutex_lock(&philo->data->print_mutex);
-	if (!philo->data->stop)
+	if (!philo->data->stop || !strcmp(msg, "died"))
 		printf("%d %d %s\n", current_time() - philo->data->start_time, philo->id, msg);
 	pthread_mutex_unlock(&philo->data->print_mutex);
 }
@@ -106,8 +116,8 @@ void	one_philo(t_philo *philo)
 	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
 	print_action(philo, "has taken a fork");
 	sleep_ms(philo->data->args.time_to_die);
-	print_action(philo, "died");
 	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+	print_action(philo, "died");
 }
 
 void *philo_routine(void *arg)
@@ -174,7 +184,8 @@ void *monitor_routine(void *arg)
 				if (!data->stop)
 				{
 					data->stop = 1;
-					print_action(&data->philos[i], "died");
+					if (data->args.num_philos != 1)
+						print_action(&data->philos[i], "died");
 				}
 				pthread_mutex_unlock(&data->stop_mutex);
 				return (NULL);
