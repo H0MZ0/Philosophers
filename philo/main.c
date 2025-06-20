@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/19 15:11:42 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/20 11:51:09 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,25 +102,33 @@ void put_down_forks(t_philo *philo)
 
 void *philo_routine(void *arg)
 {
-	t_philo *philo = (t_philo *)arg;
+    t_philo *philo = (t_philo *)arg;
+    if (philo->data->args.num_philos == 1)
+    {
+        pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+        print_action(philo, "has taken a fork");
+        sleep_ms(philo->data->args.time_to_die);
+        pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+        return NULL;
+    }
+    while (!philo->data->stop)
+    {
+        // If we have a meal limit and this philosopher has finished, exit
+        if (philo->data->args.num_meals > 0 &&
+            philo->meals_eaten >= philo->data->args.num_meals)
+            break;
 
-	int should_stop;
-	pthread_mutex_lock(&philo->data->stop_mutex);
-	should_stop = philo->data->stop;
-	pthread_mutex_unlock(&philo->data->stop_mutex);
-	while (!philo->data->stop)
-	{
-		print_action(philo, "is thinking");
-		take_forks(philo);
-		print_action(philo, "is eating");
-		philo->last_meal_time = current_time();
-		philo->meals_eaten++;
-		sleep_ms(philo->data->args.time_to_eat);
-		put_down_forks(philo);
-		print_action(philo, "is sleeping");
-		sleep_ms(philo->data->args.time_to_eat);
-	}
-	return NULL;
+        print_action(philo, "is thinking");
+        take_forks(philo);
+        print_action(philo, "is eating");
+        philo->last_meal_time = current_time();
+        philo->meals_eaten++;
+        sleep_ms(philo->data->args.time_to_eat);
+        put_down_forks(philo);
+        print_action(philo, "is sleeping");
+        sleep_ms(philo->data->args.time_to_sleep);
+    }
+    return NULL;
 }
 
 void *monitor_routine(void *arg)
@@ -130,12 +138,15 @@ void *monitor_routine(void *arg)
 	i = 0;
 	while (!data->stop)
 	{
+		i = 0;
 		while (i < data->args.num_philos)
 		{
 			if (current_time() - data->philos[i].last_meal_time > data->args.time_to_die)
 			{
-				print_action(&data->philos[i], "died");
+				if (data->args.num_philos != 1)
+					print_action(&data->philos[i], "died");
 				data->stop = 1;
+				pthread_detach(data->philos[0].thread_id);
 				break;
 			}
 			i++;
@@ -143,7 +154,8 @@ void *monitor_routine(void *arg)
 		if (data->args.num_meals > 0)
 		{
 			done = 1;
-			for (i = 0; i < data->args.num_philos; i++)
+			i = 0;
+			while (i++ < data->args.num_philos)
 				if (data->philos[i].meals_eaten < data->args.num_meals)
 					done = 0;
 			if (done)
@@ -154,19 +166,23 @@ void *monitor_routine(void *arg)
 	return NULL;
 }
 
-int	main(int ac, char **av)
+int main(int ac, char **av)
 {
-    int			i;
-    t_data		data;
-    pthread_t	monitor_thread;
+    int         i;
+    t_data      data;
+    pthread_t   monitor_thread;
 
     init_args(ac, av, &data.args);
     init_data(&data);
+
     data.start_time = current_time();
+    for (i = 0; i < data.args.num_philos; i++)
+        data.philos[i].last_meal_time = data.start_time;
+
     i = 0;
     while (i < data.args.num_philos)
     {
-        if (pthread_create((pthread_t *)&data.philos[i].thread_id, NULL, philo_routine, &data.philos[i]) != 0)
+        if (pthread_create(&data.philos[i].thread_id, NULL, philo_routine, &data.philos[i]) != 0)
             put_error("Failed to create thread");
         i++;
     }
@@ -174,7 +190,7 @@ int	main(int ac, char **av)
         put_error("Failed to create monitor thread");
     i = 0;
     while (i < data.args.num_philos)
-        pthread_join(*(pthread_t *)&data.philos[i++].thread_id, NULL);
+        pthread_join(data.philos[i++].thread_id, NULL);
     pthread_join(monitor_thread, NULL);
     return (0);
 }

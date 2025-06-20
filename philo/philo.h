@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:23:59 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/19 13:57:14 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/19 19:01:19 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ typedef struct s_data	t_data;
 
 typedef struct s_philo
 {
+	pthread_t		thread_id;
 	int				id;
 	int				left_fork;
 	int				right_fork;
 	int				meals_eaten;
 	long			last_meal_time;
 	t_data			*data;
-	unsigned long   thread_id;
 }	t_philo;
 
 typedef struct s_data
