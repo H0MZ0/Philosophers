@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:37:07 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 18:37:32 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 void sleep_ms(int ms)
 {
-	int start = current_time();
-	while (current_time() - start < ms)
-		usleep(1000);
+    long long start = current_time();
+    while (current_time() - start < ms)
+        usleep(1000);
 }
 
 void take_forks(t_philo *philo)
