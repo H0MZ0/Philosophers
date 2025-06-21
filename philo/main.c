@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 17:24:16 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 18:32:55 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,13 @@ int current_time(void)
 	return ((tv.tv_sec * 1000LL) + (tv.tv_usec / 1000));
 }
 
+void	one_philo(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+	print_action(philo, "has taken a fork");
+	sleep_ms(philo->data->args.time_to_die);
+	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+}
 
 void init_data(t_data *data)
 {
@@ -73,7 +80,7 @@ void init_data(t_data *data)
 		put_error("Malloc failed (forks)");
 	i = -1;
 	while (++i < n)
-		if (pthread_mutex_init(&data->forks[i], NULL) == -1)
+		if (pthread_mutex_init(&data->forks[i], NULL) != 0)
 			put_error("pthread_mutex_init failed");
 	pthread_mutex_init(&data->print_mutex, NULL);
 	pthread_mutex_init(&data->stop_mutex, NULL);
