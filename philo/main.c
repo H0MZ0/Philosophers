@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:38:43 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 18:45:40 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void take_forks(t_philo *philo)
 	}
 	else
 	{
+		usleep(1000);
 		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
 		print_action(philo, "has taken a fork");
 		pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
@@ -47,11 +48,11 @@ void print_action(t_philo *philo, char *msg)
 {
 	pthread_mutex_lock(&philo->data->print_mutex);
 	if (!philo->data->stop || !strcmp(msg, "died"))
-		printf("%d %d %s\n", current_time() - philo->data->start_time, philo->id, msg);
+		printf("%lld %d %s\n", current_time() - philo->data->start_time, philo->id, msg);
 	pthread_mutex_unlock(&philo->data->print_mutex);
 }
 
-int current_time(void)
+long long current_time(void)
 {
 	struct timeval	tv;
 	gettimeofday(&tv, NULL);
@@ -178,9 +179,9 @@ void *monitor_routine(void *arg)
 				return (NULL);
 			if (time_since_meal > data->args.time_to_die)
 			{
+				pthread_mutex_lock(&data->stop_mutex);
 				if (!data->stop)
 					data->stop = 1;
-				pthread_mutex_lock(&data->stop_mutex);
 				print_action(&data->philos[i], "died");
 				pthread_mutex_unlock(&data->stop_mutex);
 				return (NULL);
