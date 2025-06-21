@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:26:36 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/20 12:18:19 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 17:47:54 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,6 @@ int	ft_atoi(const char *str)
 	sign = 1;
 	result = 0;
 	i = 0;
-	while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13))
-		i++;
-	if (str[i] == '+' || str[i] == '-')
-	{
-		if (str[i] == '-')
-			sign = -1;
-		i++;
-	}
 	while (str[i] >= '0' && str[i] <= '9')
 	{
 		result = result * 10 + (str[i++] - '0');
@@ -57,3 +49,16 @@ void	put_error(char *message)
 	exit(1);
 }
 
+void cleanup(t_data *data)
+{
+	int i;
+	for (i = 0; i < data->args.num_philos; i++)
+	{
+		pthread_mutex_destroy(&data->forks[i]);
+		pthread_mutex_destroy(&data->philos[i].meal_mutex);
+	}
+	pthread_mutex_destroy(&data->print_mutex);
+	pthread_mutex_destroy(&data->stop_mutex);
+	free(data->philos);
+	free(data->forks);
+}

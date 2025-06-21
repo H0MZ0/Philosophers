@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/20 12:50:45 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 17:24:16 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void sleep_ms(int ms)
 {
 	int start = current_time();
 	while (current_time() - start < ms)
-		usleep(100);
+		usleep(1000);
 }
 
 void take_forks(t_philo *philo)
@@ -111,15 +111,6 @@ void init_args(int ac, char **av, t_args *args)
 	}
 }
 
-void	one_philo(t_philo *philo)
-{
-	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
-	print_action(philo, "has taken a fork");
-	sleep_ms(philo->data->args.time_to_die);
-	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
-	print_action(philo, "died");
-}
-
 void *philo_routine(void *arg)
 {
 	t_philo *philo = (t_philo *)arg;
@@ -135,7 +126,7 @@ void *philo_routine(void *arg)
 			break;
 		pthread_mutex_lock(&philo->meal_mutex);
 		if (philo->data->args.num_meals > 0 &&
-			philo->meals_eaten >= philo->data->args.num_meals)
+			philo->meals_eaten > philo->data->args.num_meals)
 		{
 			pthread_mutex_unlock(&philo->meal_mutex);
 			break;
@@ -180,13 +171,10 @@ void *monitor_routine(void *arg)
 				return (NULL);
 			if (time_since_meal > data->args.time_to_die)
 			{
-				pthread_mutex_lock(&data->stop_mutex);
 				if (!data->stop)
-				{
 					data->stop = 1;
-					if (data->args.num_philos != 1)
-						print_action(&data->philos[i], "died");
-				}
+				pthread_mutex_lock(&data->stop_mutex);
+				print_action(&data->philos[i], "died");
 				pthread_mutex_unlock(&data->stop_mutex);
 				return (NULL);
 			}
@@ -203,20 +191,6 @@ void *monitor_routine(void *arg)
 		}
 	}
 	return (NULL);
-}
-
-void cleanup(t_data *data)
-{
-	int i;
-	for (i = 0; i < data->args.num_philos; i++)
-	{
-		pthread_mutex_destroy(&data->forks[i]);
-		pthread_mutex_destroy(&data->philos[i].meal_mutex);
-	}
-	pthread_mutex_destroy(&data->print_mutex);
-	pthread_mutex_destroy(&data->stop_mutex);
-	free(data->philos);
-	free(data->forks);
 }
 
 int main(int ac, char **av)
