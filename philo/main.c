@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:32:55 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/21 18:34:38 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void *philo_routine(void *arg)
 			break;
 		pthread_mutex_lock(&philo->meal_mutex);
 		if (philo->data->args.num_meals > 0 &&
-			philo->meals_eaten > philo->data->args.num_meals)
+			philo->meals_eaten >= philo->data->args.num_meals)
 		{
 			pthread_mutex_unlock(&philo->meal_mutex);
 			break;
