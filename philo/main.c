@@ -6,16 +6,28 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:45:40 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/22 16:20:38 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void sleep_ms(int ms)
+int	is_stop(t_data *data)
+{
+	int res;
+
+	res = 0;
+	pthread_mutex_lock(&data->stop_mutex);
+	if (data->stop)
+		res = 1;
+	pthread_mutex_unlock(&data->stop_mutex);
+	return (res);
+}
+
+void sleep_ms(t_data *data, int ms)
 {
     long long start = current_time();
-    while (current_time() - start < ms)
+    while (current_time() - start < ms && !is_stop(data))
         usleep(1000);
 }
 
@@ -47,7 +59,7 @@ void put_down_forks(t_philo *philo)
 void print_action(t_philo *philo, char *msg)
 {
 	pthread_mutex_lock(&philo->data->print_mutex);
-	if (!philo->data->stop || !strcmp(msg, "died"))
+	if (!is_stop(philo->data) || !strcmp(msg, "died"))
 		printf("%lld %d %s\n", current_time() - philo->data->start_time, philo->id, msg);
 	pthread_mutex_unlock(&philo->data->print_mutex);
 }
@@ -61,10 +73,10 @@ long long current_time(void)
 
 void	one_philo(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+	// pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
 	print_action(philo, "has taken a fork");
-	sleep_ms(philo->data->args.time_to_die);
-	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+	sleep_ms(philo->data, philo->data->args.time_to_die);
+	// pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
 }
 
 void init_data(t_data *data)
@@ -127,19 +139,16 @@ void *philo_routine(void *arg)
 		return (one_philo(philo), NULL);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->data->stop_mutex);
-		int stop = philo->data->stop;
-		pthread_mutex_unlock(&philo->data->stop_mutex);
-		if (stop)
-			break;
-		pthread_mutex_lock(&philo->meal_mutex);
-		if (philo->data->args.num_meals > 0 &&
-			philo->meals_eaten >= philo->data->args.num_meals)
-		{
-			pthread_mutex_unlock(&philo->meal_mutex);
-			break;
-		}
-		pthread_mutex_unlock(&philo->meal_mutex);
+		if (is_stop(philo->data))
+			break ;
+		// pthread_mutex_lock(&philo->meal_mutex);
+		// if (philo->data->args.num_meals > 0 &&
+		// 	philo->meals_eaten >= philo->data->args.num_meals)
+		// {
+		// 	pthread_mutex_unlock(&philo->meal_mutex);
+		// 	break;
+		// }
+		// pthread_mutex_unlock(&philo->meal_mutex);
 		print_action(philo, "is thinking");
 		take_forks(philo);
 		print_action(philo, "is eating");
@@ -147,10 +156,10 @@ void *philo_routine(void *arg)
 		philo->last_meal_time = current_time();
 		philo->meals_eaten++;
 		pthread_mutex_unlock(&philo->meal_mutex);
-		sleep_ms(philo->data->args.time_to_eat);
+		sleep_ms(philo->data, philo->data->args.time_to_eat);
 		put_down_forks(philo);
 		print_action(philo, "is sleeping");
-		sleep_ms(philo->data->args.time_to_sleep);
+		sleep_ms(philo->data, philo->data->args.time_to_sleep);
 	}
 	return NULL;
 }
@@ -172,18 +181,15 @@ void *monitor_routine(void *arg)
 			long long time_since_meal = current_time() - data->philos[i].last_meal_time;
 			int meals = data->philos[i].meals_eaten;
 			pthread_mutex_unlock(&data->philos[i].meal_mutex);
-			pthread_mutex_lock(&data->stop_mutex);
-			int stop = data->stop;
-			pthread_mutex_unlock(&data->stop_mutex);
-			if (stop)
+			if (is_stop(data))
 				return (NULL);
 			if (time_since_meal > data->args.time_to_die)
 			{
 				pthread_mutex_lock(&data->stop_mutex);
 				if (!data->stop)
 					data->stop = 1;
-				print_action(&data->philos[i], "died");
 				pthread_mutex_unlock(&data->stop_mutex);
+				print_action(&data->philos[i], "died");
 				return (NULL);
 			}
 			if (data->args.num_meals > 0 && meals < data->args.num_meals)

@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 11:54:57 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:44:18 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/22 16:16:38 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void init_args(int ac, char **av, t_args *args);
 void init_data(t_data *data);
 void cleanup(t_data *data);
 void put_down_forks(t_philo *philo);
-void sleep_ms(int ms);
+void sleep_ms(t_data *data, int ms);
 void	one_philo(t_philo *philo);
 void take_forks(t_philo *philo);
 
