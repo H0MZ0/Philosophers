@@ -6,16 +6,62 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 12:04:19 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 18:32:49 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/22 21:02:51 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// void	one_philo(t_philo *philo)
-// {
-// 	pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
-// 	print_action(philo, "has taken a fork");
-// 	sleep_ms(philo->data->args.time_to_die);
-// 	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
-// }
+int	is_stop(t_data *data)
+{
+	int	res;
+
+	res = 0;
+	pthread_mutex_lock(&data->stop_mutex);
+	if (data->stop)
+		res = 1;
+	pthread_mutex_unlock(&data->stop_mutex);
+	return (res);
+}
+
+void	sleep_ms(t_data *data, int ms)
+{
+	long long	start;
+
+	start = current_time();
+	while (current_time() - start < ms && !is_stop(data))
+		usleep(1000);
+}
+
+void	take_forks(t_philo *philo)
+{
+	if (philo->id % 2 == 0)
+	{
+		pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
+		print_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+		print_action(philo, "has taken a fork");
+	}
+	else
+	{
+		usleep(1000);
+		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+		print_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
+		print_action(philo, "has taken a fork");
+	}
+}
+
+void	put_down_forks(t_philo *philo)
+{
+	pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
+	pthread_mutex_unlock(&philo->data->forks[philo->right_fork]);
+}
+
+long long	current_time(void)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	return ((tv.tv_sec * 1000LL) + (tv.tv_usec / 1000));
+}

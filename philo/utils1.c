@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:26:36 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/21 17:47:54 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/22 20:52:33 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,25 @@ void	put_error(char *message)
 	exit(1);
 }
 
-void cleanup(t_data *data)
+void	print_action(t_philo *philo, char *msg)
 {
-	int i;
-	for (i = 0; i < data->args.num_philos; i++)
+	pthread_mutex_lock(&philo->data->print_mutex);
+	if (!is_stop(philo->data) || !strcmp(msg, "died"))
+		printf("%lld %d %s\n", current_time() - philo->data->start_time,
+			philo->id, msg);
+	pthread_mutex_unlock(&philo->data->print_mutex);
+}
+
+void	cleanup(t_data *data)
+{
+	int	i;
+
+	i = 0;
+	while (i < data->args.num_philos)
 	{
 		pthread_mutex_destroy(&data->forks[i]);
 		pthread_mutex_destroy(&data->philos[i].meal_mutex);
+		i++;
 	}
 	pthread_mutex_destroy(&data->print_mutex);
 	pthread_mutex_destroy(&data->stop_mutex);
