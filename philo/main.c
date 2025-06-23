@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 12:22:49 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/22 19:18:13 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/23 16:04:55 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ int	main(int ac, char **av)
 	init_data(&data);
 	data.start_time = current_time();
 	main_helper(data);
-	pthread_barrier_wait(&data.start_barrier);
 	if (pthread_create(&monitor_thread, NULL, monitor_routine, &data) != 0)
 		put_error("Failed to create monitor thread");
 	i = 0;

@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 12:02:04 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/22 20:59:39 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/23 16:05:58 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void	*philo_routine(void *arg)
 	philo = (t_philo *)arg;
 	if (philo->data->args.num_philos == 1)
 		return (one_philo(philo), NULL);
-	pthread_barrier_wait(&philo->data->start_barrier);
 	while (!is_stop(philo->data))
 	{
 		print_action(philo, "is thinking");

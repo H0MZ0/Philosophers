@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/20 11:54:57 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/22 20:28:27 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/23 16:05:46 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,6 @@ typedef struct s_data
 	pthread_mutex_t		print_mutex;
 	pthread_mutex_t		stop_mutex;
 	pthread_mutex_t		access_mutex;
-	pthread_barrier_t	start_barrier;
 	int					stop;
 	long long			start_time;
 	int					time_since_meal;

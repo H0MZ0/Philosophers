@@ -6,7 +6,7 @@
 /*   By: hakader <hakader@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 02:09:36 by hakader           #+#    #+#             */
-/*   Updated: 2025/06/22 19:11:19 by hakader          ###   ########.fr       */
+/*   Updated: 2025/06/23 16:05:41 by hakader          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,5 +58,4 @@ void	init_data(t_data *data)
 		pthread_mutex_init(&data->philos[i].meal_mutex, NULL);
 	}
 	data->stop = 0;
-	pthread_barrier_init(&data->start_barrier, NULL, data->args.num_philos + 1);
 }
